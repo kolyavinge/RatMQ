@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RatMQ.Client\RatMQ.Client.csproj" />
+    <ProjectReference Include="..\RatMQ.Contracts\RatMQ.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

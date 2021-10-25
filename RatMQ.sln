@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RatMQ.Service", "RatMQ.Service\RatMQ.Service.csproj", "{3F150C4D-073E-47FA-98BF-0EF52D65FD5F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RatMQ.Client", "RatMQ.Client\RatMQ.Client.csproj", "{18F1A1C2-3E1A-4A2E-9270-58928F4F48E6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RatMQ.Contracts", "RatMQ.Contracts\RatMQ.Contracts.csproj", "{EF75B175-0100-4611-A574-CDDDC9CCDBA2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarterApp", "StarterApp\StarterApp.csproj", "{529BCD2D-860F-49C4-B2E2-D7188EEACCF5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3F150C4D-073E-47FA-98BF-0EF52D65FD5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F150C4D-073E-47FA-98BF-0EF52D65FD5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F150C4D-073E-47FA-98BF-0EF52D65FD5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F150C4D-073E-47FA-98BF-0EF52D65FD5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18F1A1C2-3E1A-4A2E-9270-58928F4F48E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18F1A1C2-3E1A-4A2E-9270-58928F4F48E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18F1A1C2-3E1A-4A2E-9270-58928F4F48E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18F1A1C2-3E1A-4A2E-9270-58928F4F48E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF75B175-0100-4611-A574-CDDDC9CCDBA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF75B175-0100-4611-A574-CDDDC9CCDBA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF75B175-0100-4611-A574-CDDDC9CCDBA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF75B175-0100-4611-A574-CDDDC9CCDBA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{529BCD2D-860F-49C4-B2E2-D7188EEACCF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{529BCD2D-860F-49C4-B2E2-D7188EEACCF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{529BCD2D-860F-49C4-B2E2-D7188EEACCF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{529BCD2D-860F-49C4-B2E2-D7188EEACCF5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF7B8504-C0F0-4E62-AF8E-F09324730501}
+	EndGlobalSection
+EndGlobal
