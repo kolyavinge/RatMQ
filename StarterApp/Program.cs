@@ -17,20 +17,16 @@ namespace StarterApp
             var queue = broker.IsQueueExist("testQueue") ?
                 broker.GetQueue<TestMessage>("testQueue") : broker.CreateQueue<TestMessage>("testQueue");
             queue.AddConsumer(new TestConsumer());
-            queue.SendMessage(new TestMessage
+            for (int i = 1; i <= 100; i++)
             {
-                IntField = 123,
-                StringField = "987",
-                InnerField = new Inner { Value = 555 }
-            });
-            Console.WriteLine("Client message 123 has been sended");
-            queue.SendMessage(new TestMessage
-            {
-                IntField = 456,
-                StringField = "789",
-                InnerField = new Inner { Value = 444 }
-            });
-            Console.WriteLine("Client message 456 has been sended");
+                queue.SendMessage(new TestMessage
+                {
+                    IntField = i,
+                    StringField = "StringField " + i,
+                    InnerField = new Inner { Value = 555 }
+                });
+                Console.WriteLine($"Client message {i} has been sended");
+            }
 
             Console.ReadKey();
         }
