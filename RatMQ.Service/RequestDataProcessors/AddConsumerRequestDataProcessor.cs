@@ -9,7 +9,11 @@ namespace RatMQ.Service.RequestDataProcessors
         public override object GetResponseData(BrokerContext brokerContext, object requestData)
         {
             var addConsumerRequestData = (AddConsumerRequestData)requestData;
-            brokerContext.Consumers.Add(new Consumer { ClientId = addConsumerRequestData.ClientId });
+            brokerContext.Consumers.Add(new Consumer
+            {
+                ClientId = addConsumerRequestData.ClientId,
+                QueueName = addConsumerRequestData.QueueName
+            });
 
             return new AddConsumerResponseData { Success = true };
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using RatMQ.Client;
 
 namespace StarterApp
@@ -7,6 +8,7 @@ namespace StarterApp
     {
         static void Main(string[] args)
         {
+            Thread.Sleep(1000);
             var brokerIp = "127.0.0.1";
             var brokerPort = 55555;
             var clientId = "StarterApp";
@@ -36,11 +38,11 @@ namespace StarterApp
 
     class TestConsumer : IConsumer<TestMessage>
     {
-        public ConsumeMessageResult ConsumeMessage(TestMessage message)
+        public void ConsumeMessage(TestMessage message, ConsumeMessageResult result)
         {
             var msg = String.Format("Broker message has been consumed: {0}", message);
             Console.WriteLine(msg);
-            return new ConsumeMessageResult { Success = true };
+            result.Commit();
         }
     }
 

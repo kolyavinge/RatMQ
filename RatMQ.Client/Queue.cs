@@ -57,11 +57,8 @@ namespace RatMQ.Client
             var message = (TMessage)JsonSerializer.FromJson(typeof(TMessage), clientMessage.Body);
             foreach (var consumer in _consumers)
             {
-                var result = consumer.ConsumeMessage(message);
-                //if (result.Success)
-                //{
-                //    _connectionContext.SendToBroker<>();
-                //}
+                var result = new ConsumeMessageResult(_connectionContext, clientMessage.Id);
+                consumer.ConsumeMessage(message, result);
             }
         }
     }

@@ -50,23 +50,16 @@ namespace RatMQ.Service
 
         private void SendMessagesToConsumers()
         {
-            foreach (var message in _brokerContext.Messages.Where(x => !x.Sended))
+            var activeMessages = from message in _brokerContext.Messages
+                                 join consumer in _brokerContext.Consumers on message.QueueName equals consumer.QueueName
+                                 where !message.IsSended && !message.IsCommited && consumer.IsReadyToConsume
+                                 select new { message, consumer };
+            foreach (var activeMessage in activeMessages)
             {
-                foreach (var consumer in _brokerContext.Consumers)
-                {
-                    var client = _brokerContext.Clients.First(x => x.ClientId == consumer.ClientId);
-                    using (var consumerTcpClient = new TcpClient())
-                    {
-                        consumerTcpClient.Connect(client.ClientIp, client.ClientPort);
-                        using (var stream = consumerTcpClient.GetStream())
-                        {
-                            var json = JsonSerializer.ToJson(new ClientMessage { Body = message.Body });
-                            var bytes = Encoding.UTF8.GetBytes(json);
-                            stream.Write(bytes);
-                        }
-                    }
-                }
-                message.Sended = true;
+                var client = _brokerContext.Clients.First(x => x.ClientId == activeMessage.consumer.ClientId);
+                SendToConsumer(client, activeMessage.message);
+                activeMessage.message.IsSended = true;
+                activeMessage.consumer.IsReadyToConsume = false;
             }
         }
 
@@ -86,6 +79,24 @@ namespace RatMQ.Service
             var json = JsonSerializer.ToJson(response);
 
             return Encoding.UTF8.GetBytes(json);
+        }
+
+        private void SendToConsumer(Client client, BrokerMessage message)
+        {
+            var clientMessageJson = JsonSerializer.ToJson(new ClientMessage
+            {
+                Id = message.Id,
+                Body = message.Body
+            });
+            using var consumerTcpClient = new TcpClient();
+            {
+                consumerTcpClient.Connect(client.ClientIp, client.ClientPort);
+                using (var stream = consumerTcpClient.GetStream())
+                {
+                    var bytes = Encoding.UTF8.GetBytes(clientMessageJson);
+                    stream.Write(bytes);
+                }
+            }
         }
     }
 }

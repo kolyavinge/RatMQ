@@ -51,7 +51,7 @@ namespace RatMQ.Client
             {
                 QueueName = queueName
             };
-            var response = _connectionContext.SendToBroker<GetQueueResponseData>(request);
+            var response = _connectionContext.SendToBroker<CommitMessageResponseData>(request);
             if (response.Success)
             {
                 return new Queue<TMessage>(_connectionContext, queueName);

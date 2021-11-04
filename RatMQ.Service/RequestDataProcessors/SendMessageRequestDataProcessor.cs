@@ -10,7 +10,12 @@ namespace RatMQ.Service.RequestDataProcessors
         public override object GetResponseData(BrokerContext brokerContext, object requestData)
         {
             var sendMessageRequestData = (SendMessageRequestData)requestData;
-            brokerContext.Messages.Add(new BrokerMessage { Body = sendMessageRequestData.Message });
+            brokerContext.Messages.Add(new BrokerMessage
+            {
+                Id = Guid.NewGuid().ToString(),
+                Body = sendMessageRequestData.Message,
+                QueueName = sendMessageRequestData.QueueName
+            });
 
             return new SendMessageResponseData { Success = true };
         }

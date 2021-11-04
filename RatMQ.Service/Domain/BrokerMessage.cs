@@ -2,13 +2,20 @@
 {
     public class BrokerMessage
     {
+        public string Id { get; set; }
+
         public string Body { get; set; }
 
-        public bool Sended { get; set; }
+        public bool IsSended { get; set; }
+
+        public bool IsCommited { get; set; }
+
+        public string QueueName { get; set; }
 
         public BrokerMessage()
         {
-            Sended = false;
+            IsSended = false;
+            IsCommited = false;
         }
     }
 }
