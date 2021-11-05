@@ -8,7 +8,7 @@ namespace RatMQ.Service.RequestDataProcessors
     {
         public override object GetResponseData(BrokerContext brokerContext, object requestData)
         {
-            return new CommitMessageResponseData { Success = true };
+            return new GetQueueResponseData { Success = true };
         }
     }
 }

@@ -13,34 +13,63 @@ namespace StarterApp
             var brokerPort = 55555;
             var clientPort = 55556;
             var broker = BrokerConnector.Connect(brokerIp, brokerPort, clientPort);
-            var queue = broker.IsQueueExist("testQueue") ?
-                broker.GetQueue<TestMessage>("testQueue") : broker.CreateQueue<TestMessage>("testQueue");
-            queue.AddConsumer(new TestConsumer());
-            for (int i = 1; i <= 100; i++)
+            var queue1 = broker.IsQueueExist("queue1") ? broker.GetQueue<Queue1Message>("queue1") : broker.CreateQueue<Queue1Message>("queue1");
+            var queue2 = broker.IsQueueExist("queue2") ? broker.GetQueue<Queue2Message>("queue2") : broker.CreateQueue<Queue2Message>("queue2");
+            queue1.AddConsumer(new Queue1Consumer());
+            queue2.AddConsumer(new Queue2Consumer());
+            for (int i = 1; i <= 50; i++)
             {
-                queue.SendMessage(new TestMessage
+                queue1.SendMessage(new Queue1Message
                 {
                     IntField = i,
-                    StringField = "StringField " + i,
+                    StringField = "queue1_" + i,
                     InnerField = new Inner { Value = 555 }
                 });
-                Console.WriteLine($"Client message {i} has been sended");
+                Console.WriteLine($"Message queue1 {i} sended");
+                queue2.SendMessage(new Queue2Message
+                {
+                    IntField = i,
+                    StringField = "queue2_" + i,
+                    InnerField = new Inner { Value = 555 }
+                });
+                Console.WriteLine($"Message queue2 {i} sended");
             }
 
             Console.ReadKey();
         }
     }
 
-    class TestConsumer : IConsumer<TestMessage>
+    class Queue1Consumer : IConsumer<Queue1Message>
     {
-        public void ConsumeMessage(TestMessage message, ConsumeMessageResult result)
+        public void ConsumeMessage(Queue1Message message, ConsumeMessageResult result)
         {
-            Console.WriteLine($"Broker message has been consumed: {message}");
+            Console.WriteLine($"Message queue1 consumed: {message}");
             result.Commit();
         }
     }
 
-    class TestMessage
+    class Queue2Consumer : IConsumer<Queue2Message>
+    {
+        public void ConsumeMessage(Queue2Message message, ConsumeMessageResult result)
+        {
+            Console.WriteLine($"Message queue2 consumed: {message}");
+            result.Commit();
+        }
+    }
+
+    class Queue1Message
+    {
+        public int IntField { get; set; }
+        public string StringField { get; set; }
+        public Inner InnerField { get; set; }
+
+        public override string ToString()
+        {
+            return $"IntField: {IntField}, StringField: {StringField}, InnerField: {InnerField.Value}";
+        }
+    }
+
+    class Queue2Message
     {
         public int IntField { get; set; }
         public string StringField { get; set; }

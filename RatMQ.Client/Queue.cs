@@ -1,20 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using RatMQ.Contracts;
 
 namespace RatMQ.Client
 {
-    public class Queue<TMessage>
+    public abstract class AbstractQueue
     {
-        private readonly ConnectionContext _connectionContext;
-        private readonly string _queueName;
-        private readonly List<IConsumer<TMessage>> _consumers;
+        internal readonly ConnectionContext _connectionContext;
 
-        internal Queue(ConnectionContext connectionContext, string queueName)
+        internal string QueueName { get; }
+
+        internal AbstractQueue(ConnectionContext connectionContext, string queueName)
         {
             _connectionContext = connectionContext;
-            _queueName = queueName;
+            QueueName = queueName;
+        }
+
+        internal abstract void SendToConsumers(ClientMessage clientMessage);
+    }
+
+    public class Queue<TMessage> : AbstractQueue
+    {
+        private readonly List<IConsumer<TMessage>> _consumers;
+
+        internal Queue(ConnectionContext connectionContext, string queueName) : base(connectionContext, queueName)
+        {
             _consumers = new List<IConsumer<TMessage>>();
         }
 
@@ -22,7 +34,7 @@ namespace RatMQ.Client
         {
             var request = new SendMessageRequestData
             {
-                QueueName = _queueName,
+                QueueName = QueueName,
                 Message = JsonSerializer.ToJson(message)
             };
             var response = _connectionContext.SendToBroker<SendMessageResponseData>(request);
@@ -36,13 +48,12 @@ namespace RatMQ.Client
             var request = new AddConsumerRequestData
             {
                 ClientId = _connectionContext.ClientId,
-                QueueName = _queueName
+                QueueName = QueueName
             };
             var response = _connectionContext.SendToBroker<AddConsumerResponseData>(request);
             if (response.Success)
             {
                 _consumers.Add(consumer);
-                _connectionContext.ListenToBroker(ListenToBrokerCallback);
             }
             else
             {
@@ -50,10 +61,8 @@ namespace RatMQ.Client
             }
         }
 
-        private void ListenToBrokerCallback(byte[] buffer, int count)
+        internal override void SendToConsumers(ClientMessage clientMessage)
         {
-            var json = Encoding.UTF8.GetString(buffer, 0, count);
-            var clientMessage = JsonSerializer.FromJson<ClientMessage>(json);
             var message = (TMessage)JsonSerializer.FromJson(typeof(TMessage), clientMessage.Body);
             foreach (var consumer in _consumers)
             {

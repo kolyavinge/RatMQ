@@ -8,6 +8,8 @@ namespace RatMQ.Contracts
     {
         public string Id { get; set; }
 
+        public string QueueName { get; set; }
+
         public string Body { get; set; }
     }
 }

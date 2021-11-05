@@ -59,6 +59,7 @@ namespace RatMQ.Service
             var clientMessageJson = JsonSerializer.ToJson(new ClientMessage
             {
                 Id = message.Id,
+                QueueName = message.QueueName,
                 Body = message.Body
             });
             using var consumerTcpClient = new TcpClient();
