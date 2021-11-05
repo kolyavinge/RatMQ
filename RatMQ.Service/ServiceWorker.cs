@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RatMQ.Contracts;
@@ -17,13 +18,15 @@ namespace RatMQ.Service
         private readonly RequestDataProcessorFactory _requestDataProcessorFactory;
         private readonly ConsumerMessageSender _consumerMessageSender;
         private readonly ILogger<ServiceWorker> _logger;
+        private readonly int _port;
 
-        public ServiceWorker(ILogger<ServiceWorker> logger)
+        public ServiceWorker(IConfiguration configuration, ILogger<ServiceWorker> logger)
         {
             _brokerContext = new BrokerContext();
             _requestDataProcessorFactory = new RequestDataProcessorFactory();
             _consumerMessageSender = new ConsumerMessageSender(_brokerContext);
             _logger = logger;
+            _port = configuration.GetValue<int>("Port");
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,8 +34,7 @@ namespace RatMQ.Service
             _consumerMessageSender.StartAsync();
             var buffer = new byte[1024];
             var ipAddress = IPAddress.Parse("127.0.0.1");
-            var port = 55555;
-            var server = new TcpListener(ipAddress, port);
+            var server = new TcpListener(ipAddress, _port);
             server.Start();
             while (!stoppingToken.IsCancellationRequested)
             {
