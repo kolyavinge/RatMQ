@@ -8,12 +8,11 @@ namespace StarterApp
     {
         static void Main(string[] args)
         {
-            Thread.Sleep(1000);
+            Thread.Sleep(1000); // broker up delay
             var brokerIp = "127.0.0.1";
             var brokerPort = 55555;
-            var clientId = "StarterApp";
             var clientPort = 55556;
-            var broker = BrokerConnector.Connect(brokerIp, brokerPort, clientId, clientPort);
+            var broker = BrokerConnector.Connect(brokerIp, brokerPort, clientPort);
             var queue = broker.IsQueueExist("testQueue") ?
                 broker.GetQueue<TestMessage>("testQueue") : broker.CreateQueue<TestMessage>("testQueue");
             queue.AddConsumer(new TestConsumer());
@@ -36,8 +35,7 @@ namespace StarterApp
     {
         public void ConsumeMessage(TestMessage message, ConsumeMessageResult result)
         {
-            var msg = String.Format("Broker message has been consumed: {0}", message);
-            Console.WriteLine(msg);
+            Console.WriteLine($"Broker message has been consumed: {message}");
             result.Commit();
         }
     }
@@ -50,7 +48,7 @@ namespace StarterApp
 
         public override string ToString()
         {
-            return String.Format("IntField: {0}, StringField: {1}, InnerField: {2}", IntField, StringField, InnerField.Value);
+            return $"IntField: {IntField}, StringField: {StringField}, InnerField: {InnerField.Value}";
         }
     }
 

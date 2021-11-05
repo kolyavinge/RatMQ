@@ -5,14 +5,14 @@ namespace RatMQ.Client
 {
     public static class BrokerConnector
     {
-        public static Broker Connect(string brokerIp, int brokerPort, string clientId, int clientPort)
+        public static Broker Connect(string brokerIp, int brokerPort, int clientPort)
         {
-            var connectionContext = new ConnectionContext(brokerIp, brokerPort, clientId, clientPort);
+            var connectionContext = new ConnectionContext(brokerIp, brokerPort, clientPort);
             var request = new BrokerConnectionRequestData
             {
                 BrokerIp = brokerIp,
                 BrokerPort = brokerPort,
-                ClientId = clientId,
+                ClientId = connectionContext.ClientId,
                 ClientIp = "127.0.0.1",
                 ClientPort = clientPort
             };

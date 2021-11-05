@@ -11,18 +11,16 @@ namespace RatMQ.Client
     {
         private IPAddress _brokerIp;
         private int _brokerPort;
-        private string _clientId;
         private int _clientPort;
 
-        public ConnectionContext(string brokerIp, int brokerPort, string clientId, int clientPort)
+        public ConnectionContext(string brokerIp, int brokerPort, int clientPort)
         {
             _brokerIp = IPAddress.Parse(brokerIp);
             _brokerPort = brokerPort;
-            _clientId = clientId;
             _clientPort = clientPort;
         }
 
-        public string ClientId { get { return _clientId; } }
+        public string ClientId { get { return $"{Environment.MachineName}_{_clientPort}"; } }
 
         public TResponseData SendToBroker<TResponseData>(object requestData)
         {
