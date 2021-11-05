@@ -1,5 +1,5 @@
-﻿using RatMQ.Contracts;
-using RatMQ.Service.Domain;
+﻿using System.Linq;
+using RatMQ.Contracts;
 
 namespace RatMQ.Service.RequestDataProcessors
 {
@@ -8,7 +8,8 @@ namespace RatMQ.Service.RequestDataProcessors
     {
         public override object GetResponseData(BrokerContext brokerContext, object requestData)
         {
-            return new GetQueueResponseData { Success = true };
+            var getQueueRequestData = (GetQueueRequestData)requestData;
+            return new GetQueueResponseData { Success = brokerContext.Queues.Any(x => x.Name == getQueueRequestData.QueueName) };
         }
     }
 }
