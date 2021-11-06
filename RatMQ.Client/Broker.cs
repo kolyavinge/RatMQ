@@ -8,12 +8,12 @@ namespace RatMQ.Client
     public class Broker
     {
         private readonly ConnectionContext _connectionContext;
-        private readonly List<AbstractQueue> _queues;
+        private readonly Dictionary<string, AbstractQueue> _queues;
 
         internal Broker(ConnectionContext connectionContext)
         {
             _connectionContext = connectionContext;
-            _queues = new List<AbstractQueue>();
+            _queues = new Dictionary<string, AbstractQueue>();
             _connectionContext.ListenToBroker(ListenToBrokerCallback);
         }
 
@@ -21,7 +21,7 @@ namespace RatMQ.Client
         {
             var json = Encoding.UTF8.GetString(buffer, 0, count);
             var clientMessage = JsonSerializer.FromJson<ClientMessage>(json);
-            var queue = _queues.First(q => q.QueueName == clientMessage.QueueName);
+            var queue = _queues[clientMessage.QueueName];
             queue.SendToConsumers(clientMessage);
         }
 
@@ -52,7 +52,7 @@ namespace RatMQ.Client
             if (response.Success)
             {
                 var queue = new Queue<TMessage>(_connectionContext, queueName);
-                _queues.Add(queue);
+                _queues.Add(queueName, queue);
                 return queue;
             }
             else
@@ -70,8 +70,17 @@ namespace RatMQ.Client
             var response = _connectionContext.SendToBroker<GetQueueResponseData>(request);
             if (response.Success)
             {
-                var queue = new Queue<TMessage>(_connectionContext, queueName);
-                _queues.Add(queue);
+                Queue<TMessage> queue;
+                if (_queues.ContainsKey(queueName))
+                {
+                    queue = (Queue<TMessage>)_queues[queueName];
+                }
+                else
+                {
+                    queue = new Queue<TMessage>(_connectionContext, queueName);
+                    _queues.Add(queueName, queue);
+                }
+
                 return queue;
             }
             else
