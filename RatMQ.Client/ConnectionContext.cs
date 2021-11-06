@@ -29,23 +29,22 @@ namespace RatMQ.Client
                 JsonDataTypeName = requestData.GetType().AssemblyQualifiedName,
                 JsonData = JsonSerializer.ToJson(requestData)
             };
-            using (var client = new TcpClient())
+            using (var tcpClient = new TcpClient())
             {
-                client.Connect(_brokerIp, _brokerPort);
-                using (var stream = client.GetStream())
-                {
-                    var json = JsonSerializer.ToJson(request);
-                    var bytes = Encoding.UTF8.GetBytes(json);
-                    stream.Write(bytes);
+                tcpClient.Connect(_brokerIp, _brokerPort);
+                var socket = tcpClient.Client;
 
-                    bytes = new byte[1024];
-                    var count = stream.Read(bytes);
-                    json = Encoding.UTF8.GetString(bytes, 0, count);
-                    var response = JsonSerializer.FromJson<Response>(json);
-                    var responseData = JsonSerializer.FromJson<TResponseData>(response.JsonData);
+                var json = JsonSerializer.ToJson(request);
+                var bytes = Encoding.UTF8.GetBytes(json);
+                socket.Send(bytes);
 
-                    return responseData;
-                }
+                bytes = new byte[1024];
+                var count = socket.Receive(bytes);
+                json = Encoding.UTF8.GetString(bytes, 0, count);
+                var response = JsonSerializer.FromJson<Response>(json);
+                var responseData = JsonSerializer.FromJson<TResponseData>(response.JsonData);
+
+                return responseData;
             }
         }
 
@@ -56,17 +55,24 @@ namespace RatMQ.Client
             Task.Factory.StartNew(() =>
             {
                 var ipAddress = IPAddress.Parse("127.0.0.1");
-                var server = new TcpListener(ipAddress, _clientPort);
-                server.Start();
+                var tcpListener = new TcpListener(ipAddress, _clientPort);
+                tcpListener.Start();
                 while (true)
                 {
-                    var client = server.AcceptTcpClient();
-                    using (var stream = client.GetStream())
+                    var tcpClient = tcpListener.AcceptTcpClient();
+                    var socket = tcpClient.Client;
+                    var resultBuffer = new byte[10 * 1024 * 1024];
+                    var readBuffer = new byte[1024 * 1024];
+                    int resultBufferLength = 0;
+                    int readBufferLength;
+                    do
                     {
-                        var buffer = new byte[1024];
-                        var count = stream.Read(buffer);
-                        callback(buffer, count);
+                        readBufferLength = socket.Receive(readBuffer);
+                        Array.Copy(readBuffer, 0, resultBuffer, resultBufferLength, readBufferLength);
+                        resultBufferLength += readBufferLength;
                     }
+                    while (socket.Available > 0);
+                    callback(resultBuffer, resultBufferLength);
                 }
             });
         }

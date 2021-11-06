@@ -32,21 +32,31 @@ namespace RatMQ.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _consumerMessageSender.StartAsync();
-            var buffer = new byte[1024];
+            var resultBuffer = new byte[10 * 1024 * 1024];
+            var readBuffer = new byte[1024 * 1024];
             var ipAddress = IPAddress.Parse("127.0.0.1");
-            var server = new TcpListener(ipAddress, _port);
-            server.Start();
+            var tcpListener = new TcpListener(ipAddress, _port);
+            tcpListener.Start();
             while (!stoppingToken.IsCancellationRequested)
             {
-                var client = server.AcceptTcpClient();
-                using (var stream = client.GetStream())
+                var tcpClient = tcpListener.AcceptTcpClient();
+                var socket = tcpClient.Client;
+
+                int resultBufferLength = 0;
+                int readBufferLength;
+                do
                 {
-                    var count = stream.Read(buffer);
-                    var requestData = RequestDataFromBytes(buffer, count);
-                    var requestDataProcessor = _requestDataProcessorFactory.GetProcessorFor(requestData);
-                    var responseData = requestDataProcessor.GetResponseData(_brokerContext, requestData);
-                    stream.Write(ResponseDataToBytes(responseData));
+                    readBufferLength = socket.Receive(readBuffer);
+                    Array.Copy(readBuffer, 0, resultBuffer, resultBufferLength, readBufferLength);
+                    resultBufferLength += readBufferLength;
                 }
+                while (socket.Available > 0);
+
+                var requestData = RequestDataFromBytes(resultBuffer, resultBufferLength);
+                var requestDataProcessor = _requestDataProcessorFactory.GetProcessorFor(requestData);
+                var responseData = requestDataProcessor.GetResponseData(_brokerContext, requestData);
+                socket.Send(ResponseDataToBytes(responseData));
+
                 _consumerMessageSender.SendMessagesToConsumers();
             }
         }
