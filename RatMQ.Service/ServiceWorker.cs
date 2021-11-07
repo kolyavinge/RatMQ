@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RatMQ.Contracts;
+using RatMQ.Service.Domain;
 using RatMQ.Service.Utils;
 
 namespace RatMQ.Service
@@ -23,6 +25,7 @@ namespace RatMQ.Service
         public ServiceWorker(IConfiguration configuration, ILogger<ServiceWorker> logger)
         {
             _brokerContext = new BrokerContext();
+            ReadQueueDescriptions();
             _requestDataProcessorFactory = new RequestDataProcessorFactory();
             _consumerMessageSender = new ConsumerMessageSender(_brokerContext);
             _logger = logger;
@@ -77,6 +80,15 @@ namespace RatMQ.Service
             var json = JsonSerializer.ToJson(response);
 
             return Encoding.UTF8.GetBytes(json);
+        }
+
+        private void ReadQueueDescriptions()
+        {
+            var getQueueDescriptions = QueueFileReader.GetQueueDescriptions();
+            if (getQueueDescriptions != null)
+            {
+                _brokerContext.Queues.AddRange(getQueueDescriptions.Select(x => new Queue { Name = x.Name }));
+            }
         }
     }
 }

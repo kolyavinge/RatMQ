@@ -1,3 +1,4 @@
 .vs
 bin
 obj
+/RatMQ.Service/queues.config
