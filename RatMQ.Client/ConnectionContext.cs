@@ -35,12 +35,20 @@ namespace RatMQ.Client
                 var socket = tcpClient.Client;
 
                 var json = JsonSerializer.ToJson(request);
-                var bytes = Encoding.UTF8.GetBytes(json);
-                socket.Send(bytes);
+                var readBuffer = Encoding.UTF8.GetBytes(json);
+                socket.Send(readBuffer);
 
-                bytes = new byte[1024];
-                var count = socket.Receive(bytes);
-                json = Encoding.UTF8.GetString(bytes, 0, count);
+                var resultBuffer = new byte[10 * 1024 * 1024];
+                int resultBufferLength = 0;
+                readBuffer = new byte[1024 * 1024];
+                do
+                {
+                    var readBufferLength = socket.Receive(readBuffer);
+                    Array.Copy(readBuffer, 0, resultBuffer, resultBufferLength, readBufferLength);
+                    resultBufferLength += readBufferLength;
+                } while (socket.Available > 0);
+
+                json = Encoding.UTF8.GetString(resultBuffer, 0, resultBufferLength);
                 var response = JsonSerializer.FromJson<Response>(json);
                 var responseData = JsonSerializer.FromJson<TResponseData>(response.JsonData);
 
