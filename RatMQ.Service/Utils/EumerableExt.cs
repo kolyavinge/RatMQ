@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace RatMQ.Service.Utils
@@ -10,6 +11,14 @@ namespace RatMQ.Service.Utils
             foreach (var item in collection)
             {
                 action(item);
+            }
+        }
+
+        public static void AddRange<T>(this ConcurrentBag<T> collection, IEnumerable<T> collectionToAdd)
+        {
+            foreach (var item in collectionToAdd)
+            {
+                collection.Add(item);
             }
         }
     }

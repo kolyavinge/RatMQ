@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using RatMQ.Contracts;
 
@@ -32,27 +34,37 @@ namespace RatMQ.Client
             using (var tcpClient = new TcpClient())
             {
                 tcpClient.Connect(_brokerIp, _brokerPort);
-                var socket = tcpClient.Client;
-
-                var json = JsonSerializer.ToJson(request);
-                var readBuffer = Encoding.UTF8.GetBytes(json);
-                socket.Send(readBuffer);
-
-                var resultBuffer = new byte[10 * 1024 * 1024];
-                int resultBufferLength = 0;
-                readBuffer = new byte[1024 * 1024];
-                do
+                using (var stream = tcpClient.GetStream())
                 {
-                    var readBufferLength = socket.Receive(readBuffer);
-                    Array.Copy(readBuffer, 0, resultBuffer, resultBufferLength, readBufferLength);
-                    resultBufferLength += readBufferLength;
-                } while (socket.Available > 0);
+                    var json = JsonSerializer.ToJson(request);
+                    var readBuffer = Encoding.UTF8.GetBytes(json);
+                    var binary = new BinaryWriter(stream);
+                    binary.Write(readBuffer.Length);
+                    stream.Write(readBuffer);
+                    stream.Flush();
 
-                json = Encoding.UTF8.GetString(resultBuffer, 0, resultBufferLength);
-                var response = JsonSerializer.FromJson<Response>(json);
-                var responseData = JsonSerializer.FromJson<TResponseData>(response.JsonData);
+                    var binaryReader = new BinaryReader(stream);
+                    var responseSize = binaryReader.ReadInt32();
+                    var resultBuffer = new byte[10 * 1024 * 1024];
+                    int resultBufferCurrentLength = 0;
+                    readBuffer = new byte[1024 * 1024];
+                    for (int i = 0; resultBufferCurrentLength != responseSize; i++)
+                    {
+                        var readBufferLength = stream.Read(readBuffer);
+                        if (readBufferLength + resultBufferCurrentLength > resultBuffer.Length)
+                        {
+                            Array.Resize(ref resultBuffer, 2 * resultBuffer.Length);
+                        }
+                        Array.Copy(readBuffer, 0, resultBuffer, resultBufferCurrentLength, readBufferLength);
+                        resultBufferCurrentLength += readBufferLength;
+                    }
 
-                return responseData;
+                    json = Encoding.UTF8.GetString(resultBuffer, 0, resultBufferCurrentLength);
+                    var response = JsonSerializer.FromJson<Response>(json);
+                    var responseData = JsonSerializer.FromJson<TResponseData>(response.JsonData);
+
+                    return responseData;
+                }
             }
         }
 
@@ -67,20 +79,28 @@ namespace RatMQ.Client
                 tcpListener.Start();
                 while (true)
                 {
-                    var tcpClient = tcpListener.AcceptTcpClient();
-                    var socket = tcpClient.Client;
-                    var resultBuffer = new byte[10 * 1024 * 1024];
-                    var readBuffer = new byte[1024 * 1024];
-                    int resultBufferLength = 0;
-                    int readBufferLength;
-                    do
+                    using (var tcpClient = tcpListener.AcceptTcpClient())
+                    using (var stream = tcpClient.GetStream())
                     {
-                        readBufferLength = socket.Receive(readBuffer);
-                        Array.Copy(readBuffer, 0, resultBuffer, resultBufferLength, readBufferLength);
-                        resultBufferLength += readBufferLength;
+                        var binaryReader = new BinaryReader(stream);
+                        int requestSize = binaryReader.ReadInt32();
+
+                        var resultBuffer = new byte[10 * 1024 * 1024];
+                        var readBuffer = new byte[1024 * 1024];
+                        int resultBufferCurrentLength = 0;
+                        int readBufferLength;
+                        for (int i = 0; resultBufferCurrentLength != requestSize; i++)
+                        {
+                            readBufferLength = stream.Read(readBuffer);
+                            if (readBufferLength + resultBufferCurrentLength > resultBuffer.Length)
+                            {
+                                Array.Resize(ref resultBuffer, 2 * resultBuffer.Length);
+                            }
+                            Array.Copy(readBuffer, 0, resultBuffer, resultBufferCurrentLength, readBufferLength);
+                            resultBufferCurrentLength += readBufferLength;
+                        }
+                        callback(resultBuffer, resultBufferCurrentLength);
                     }
-                    while (socket.Available > 0);
-                    callback(resultBuffer, resultBufferLength);
                 }
             });
         }

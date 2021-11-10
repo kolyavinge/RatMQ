@@ -43,8 +43,8 @@ namespace StarterApp
     {
         public void ConsumeMessage(Queue1Message message, ConsumeMessageResult result)
         {
-            Console.WriteLine($"Message queue1 consumed: {message}");
             result.Commit();
+            Console.WriteLine($"Message queue1 consumed: {message}");
         }
     }
 
@@ -52,8 +52,8 @@ namespace StarterApp
     {
         public void ConsumeMessage(Queue2Message message, ConsumeMessageResult result)
         {
-            Console.WriteLine($"Message queue2 consumed: {message}");
             result.Commit();
+            Console.WriteLine($"Message queue2 consumed: {message}");
         }
     }
 

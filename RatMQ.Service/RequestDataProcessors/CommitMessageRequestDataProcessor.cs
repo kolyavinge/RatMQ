@@ -10,11 +10,13 @@ namespace RatMQ.Service.RequestDataProcessors
         {
             var commitMessageRequestData = (CommitMessageRequestData)requestData;
 
-            var consumer = brokerContext.Consumers.First(x => x.ClientId == commitMessageRequestData.ClientId);
-            var message = brokerContext.Messages.First(x => x.Id == commitMessageRequestData.MessageId);
-
-            consumer.IsReadyToConsume = true;
-            message.IsCommited = true;
+            lock (brokerContext)
+            {
+                var message = brokerContext.Messages.First(x => x.Id == commitMessageRequestData.MessageId);
+                var consumer = brokerContext.Consumers.First(x => x.ClientId == commitMessageRequestData.ClientId && x.QueueName == message.QueueName);
+                consumer.IsReadyToConsume = true;
+                message.IsCommited = true;
+            }
 
             return new CommitMessageResponseData { Success = true };
         }

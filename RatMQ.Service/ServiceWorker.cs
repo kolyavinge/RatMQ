@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -35,33 +36,49 @@ namespace RatMQ.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _consumerMessageSender.StartAsync();
-            var resultBuffer = new byte[10 * 1024 * 1024];
-            var readBuffer = new byte[1024 * 1024];
             var ipAddress = IPAddress.Parse("127.0.0.1");
             var tcpListener = new TcpListener(ipAddress, _port);
             tcpListener.Start();
             while (!stoppingToken.IsCancellationRequested)
             {
                 var tcpClient = tcpListener.AcceptTcpClient();
-                var socket = tcpClient.Client;
+                Task.Factory.StartNew(() => ProcessRequest(tcpClient), stoppingToken);
+            }
+        }
 
-                int resultBufferLength = 0;
+        private void ProcessRequest(TcpClient tcpClient)
+        {
+            var resultBuffer = new byte[10 * 1024 * 1024];
+            var readBuffer = new byte[1024 * 1024];
+            using (var stream = tcpClient.GetStream())
+            {
+                var binaryReader = new BinaryReader(stream);
+                int requestSize = binaryReader.ReadInt32();
+
+                int resultBufferCurrentLength = 0;
                 int readBufferLength;
-                do
+                for (int i = 0; resultBufferCurrentLength != requestSize; i++)
                 {
-                    readBufferLength = socket.Receive(readBuffer);
-                    Array.Copy(readBuffer, 0, resultBuffer, resultBufferLength, readBufferLength);
-                    resultBufferLength += readBufferLength;
+                    readBufferLength = stream.Read(readBuffer);
+                    if (readBufferLength + resultBufferCurrentLength > resultBuffer.Length)
+                    {
+                        Array.Resize(ref resultBuffer, 2 * resultBuffer.Length);
+                    }
+                    Array.Copy(readBuffer, 0, resultBuffer, resultBufferCurrentLength, readBufferLength);
+                    resultBufferCurrentLength += readBufferLength;
                 }
-                while (socket.Available > 0);
 
-                var requestData = RequestDataFromBytes(resultBuffer, resultBufferLength);
+                var requestData = RequestDataFromBytes(resultBuffer, resultBufferCurrentLength);
                 var requestDataProcessor = _requestDataProcessorFactory.GetProcessorFor(requestData);
                 var responseData = requestDataProcessor.GetResponseData(_brokerContext, requestData);
-                socket.Send(ResponseDataToBytes(responseData));
-
-                _consumerMessageSender.SendMessagesToConsumers();
+                var responseDataBytes = ResponseDataToBytes(responseData);
+                var binaryWriter = new BinaryWriter(stream);
+                binaryWriter.Write(responseDataBytes.Length);
+                stream.Write(responseDataBytes);
+                stream.Flush();
             }
+            tcpClient.Close();
+            _consumerMessageSender.SendMessagesToConsumers();
         }
 
         private object RequestDataFromBytes(byte[] buffer, int count)

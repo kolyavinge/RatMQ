@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -32,24 +34,33 @@ namespace RatMQ.Service
             {
                 SendMessagesToConsumers();
                 Thread.Sleep(_sendMessageTimeout);
-                _brokerContext.Consumers.Where(x => !x.IsReadyToConsume).Each(x => x.IsReadyToConsume = true);
-                _brokerContext.Messages.Where(x => x.IsSended && !x.IsCommited).Each(x => x.IsSended = false);
+                lock (_brokerContext)
+                {
+                    _brokerContext.Consumers.Where(x => !x.IsReadyToConsume).Each(x => x.IsReadyToConsume = true);
+                    _brokerContext.Messages.Where(x => x.IsSended && !x.IsCommited).Each(x => x.IsSended = false);
+                }
             }
         }
 
         public void SendMessagesToConsumers()
         {
-            foreach (var message in _brokerContext.Messages.Where(x => !x.IsSended))
+            lock (_brokerContext)
             {
-                var consumer = _brokerContext.Consumers.Where(c => c.QueueName == message.QueueName && c.IsReadyToConsume).FirstOrDefault();
-                if (consumer != null)
+                foreach (var message in _brokerContext.Messages.Where(x => !x.IsSended).ToList())
                 {
-                    var client = _brokerContext.Clients.First(c => c.ClientId == consumer.ClientId);
-                    SendToConsumer(client, message);
-                    message.IsSended = true;
-                    consumer.IsReadyToConsume = false;
-                    _brokerContext.Consumers.Remove(consumer);
-                    _brokerContext.Consumers.Add(consumer);
+                    var consumer = _brokerContext.Consumers.Where(c => c.QueueName == message.QueueName && c.IsReadyToConsume).FirstOrDefault();
+                    if (consumer != null)
+                    {
+                        var client = _brokerContext.Clients.First(c => c.ClientId == consumer.ClientId);
+                        SendToConsumer(client, message);
+                        message.IsSended = true;
+                        consumer.IsReadyToConsume = false;
+                        if (_brokerContext.Consumers.Count > 1)
+                        {
+                            _brokerContext.Consumers = new ConcurrentBag<Consumer>(_brokerContext.Consumers.Except(new[] { consumer }));
+                            _brokerContext.Consumers.Add(consumer);
+                        }
+                    }
                 }
             }
         }
@@ -68,6 +79,8 @@ namespace RatMQ.Service
                 using (var stream = consumerTcpClient.GetStream())
                 {
                     var bytes = Encoding.UTF8.GetBytes(clientMessageJson);
+                    var binaryWriter = new BinaryWriter(stream);
+                    binaryWriter.Write(bytes.Length);
                     stream.Write(bytes);
                 }
             }
