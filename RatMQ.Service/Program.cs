@@ -14,6 +14,7 @@ namespace RatMQ.Service
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddSingleton<IBrokerContext>(new BrokerContext());
                     services.AddHostedService<ServiceWorker>();
                 });
     }

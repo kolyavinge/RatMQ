@@ -5,7 +5,7 @@ namespace RatMQ.Service
 {
     public abstract class RequestDataProcessor
     {
-        public abstract object GetResponseData(BrokerContext brokerContext, object requestData);
+        public abstract object GetResponseData(IBrokerContext brokerContext, object requestData);
     }
 
     [AttributeUsage(AttributeTargets.Class)]

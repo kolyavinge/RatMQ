@@ -4,15 +4,26 @@ using RatMQ.Service.Domain;
 
 namespace RatMQ.Service
 {
-    public class BrokerContext
+    public interface IBrokerContext
     {
-        public ConcurrentBag<Queue> Queues { get; private set; }
+        ConcurrentBag<Queue> Queues { get; set; }
 
-        public ConcurrentBag<Client> Clients { get; private set; }
+        ConcurrentBag<Client> Clients { get; set; }
+
+        ConcurrentBag<Consumer> Consumers { get; set; }
+
+        ConcurrentBag<BrokerMessage> Messages { get; set; }
+    }
+
+    public class BrokerContext : IBrokerContext
+    {
+        public ConcurrentBag<Queue> Queues { get; set; }
+
+        public ConcurrentBag<Client> Clients { get; set; }
 
         public ConcurrentBag<Consumer> Consumers { get; set; }
 
-        public ConcurrentBag<BrokerMessage> Messages { get; private set; }
+        public ConcurrentBag<BrokerMessage> Messages { get; set; }
 
         public BrokerContext()
         {

@@ -6,7 +6,7 @@ namespace RatMQ.Service.RequestDataProcessors
     [RequestDataProcessor(typeof(CommitMessageRequestData))]
     public class CommitMessageRequestDataProcessor : RequestDataProcessor
     {
-        public override object GetResponseData(BrokerContext brokerContext, object requestData)
+        public override object GetResponseData(IBrokerContext brokerContext, object requestData)
         {
             var commitMessageRequestData = (CommitMessageRequestData)requestData;
 

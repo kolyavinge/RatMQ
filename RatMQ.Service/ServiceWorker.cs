@@ -17,20 +17,21 @@ namespace RatMQ.Service
 {
     public class ServiceWorker : BackgroundService
     {
-        private readonly BrokerContext _brokerContext;
+        private readonly IBrokerContext _brokerContext;
         private readonly RequestDataProcessorFactory _requestDataProcessorFactory;
         private readonly ConsumerMessageSender _consumerMessageSender;
         private readonly ILogger<ServiceWorker> _logger;
         private readonly int _port;
 
-        public ServiceWorker(IConfiguration configuration, ILogger<ServiceWorker> logger)
+        public ServiceWorker(
+            IBrokerContext brokerContext, IConfiguration configuration, ILogger<ServiceWorker> logger)
         {
-            _brokerContext = new BrokerContext();
-            ReadQueueDescriptions();
+            _brokerContext = brokerContext;
             _requestDataProcessorFactory = new RequestDataProcessorFactory();
             _consumerMessageSender = new ConsumerMessageSender(_brokerContext);
             _logger = logger;
             _port = configuration.GetValue<int>("Port");
+            ReadQueueDescriptions();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

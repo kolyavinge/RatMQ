@@ -7,7 +7,7 @@ namespace RatMQ.Service.RequestDataProcessors
     [RequestDataProcessor(typeof(SendMessageRequestData))]
     public class SendMessageRequestDataProcessor : RequestDataProcessor
     {
-        public override object GetResponseData(BrokerContext brokerContext, object requestData)
+        public override object GetResponseData(IBrokerContext brokerContext, object requestData)
         {
             var sendMessageRequestData = (SendMessageRequestData)requestData;
             brokerContext.Messages.Add(new BrokerMessage

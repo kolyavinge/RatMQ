@@ -15,9 +15,9 @@ namespace RatMQ.Service
     class ConsumerMessageSender
     {
         private readonly TimeSpan _sendMessageTimeout;
-        private readonly BrokerContext _brokerContext;
+        private readonly IBrokerContext _brokerContext;
 
-        public ConsumerMessageSender(BrokerContext brokerContext)
+        public ConsumerMessageSender(IBrokerContext brokerContext)
         {
             _brokerContext = brokerContext;
             _sendMessageTimeout = TimeSpan.FromSeconds(30);
