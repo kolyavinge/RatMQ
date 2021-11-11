@@ -12,7 +12,13 @@ using RatMQ.Service.Utils;
 
 namespace RatMQ.Service
 {
-    class ConsumerMessageSender
+    public interface IConsumerMessageSender
+    {
+        void StartAsync();
+        void SendMessagesToConsumers();
+    }
+
+    public class ConsumerMessageSender : IConsumerMessageSender
     {
         private readonly TimeSpan _sendMessageTimeout;
         private readonly IBrokerContext _brokerContext;

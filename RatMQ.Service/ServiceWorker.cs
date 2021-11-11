@@ -18,17 +18,17 @@ namespace RatMQ.Service
     public class ServiceWorker : BackgroundService
     {
         private readonly IBrokerContext _brokerContext;
+        private readonly IConsumerMessageSender _consumerMessageSender;
         private readonly RequestDataProcessorFactory _requestDataProcessorFactory;
-        private readonly ConsumerMessageSender _consumerMessageSender;
         private readonly ILogger<ServiceWorker> _logger;
         private readonly int _port;
 
         public ServiceWorker(
-            IBrokerContext brokerContext, IConfiguration configuration, ILogger<ServiceWorker> logger)
+            IBrokerContext brokerContext, IConsumerMessageSender consumerMessageSender, IConfiguration configuration, ILogger<ServiceWorker> logger)
         {
             _brokerContext = brokerContext;
+            _consumerMessageSender = consumerMessageSender;
             _requestDataProcessorFactory = new RequestDataProcessorFactory();
-            _consumerMessageSender = new ConsumerMessageSender(_brokerContext);
             _logger = logger;
             _port = configuration.GetValue<int>("Port");
             ReadQueueDescriptions();
