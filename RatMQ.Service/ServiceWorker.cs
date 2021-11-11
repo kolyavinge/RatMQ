@@ -19,16 +19,16 @@ namespace RatMQ.Service
     {
         private readonly IBrokerContext _brokerContext;
         private readonly IConsumerMessageSender _consumerMessageSender;
-        private readonly RequestDataProcessorFactory _requestDataProcessorFactory;
+        private readonly IRequestDataProcessorFactory _requestDataProcessorFactory;
         private readonly ILogger<ServiceWorker> _logger;
         private readonly int _port;
 
         public ServiceWorker(
-            IBrokerContext brokerContext, IConsumerMessageSender consumerMessageSender, IConfiguration configuration, ILogger<ServiceWorker> logger)
+            IBrokerContext brokerContext, IConsumerMessageSender consumerMessageSender, IRequestDataProcessorFactory requestDataProcessorFactory, IConfiguration configuration, ILogger<ServiceWorker> logger)
         {
             _brokerContext = brokerContext;
             _consumerMessageSender = consumerMessageSender;
-            _requestDataProcessorFactory = new RequestDataProcessorFactory();
+            _requestDataProcessorFactory = requestDataProcessorFactory;
             _logger = logger;
             _port = configuration.GetValue<int>("Port");
             ReadQueueDescriptions();

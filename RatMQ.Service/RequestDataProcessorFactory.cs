@@ -5,7 +5,12 @@ using System.Reflection;
 
 namespace RatMQ.Service
 {
-    class RequestDataProcessorFactory
+    public interface IRequestDataProcessorFactory
+    {
+        RequestDataProcessor GetProcessorFor(object requestData);
+    }
+
+    public class RequestDataProcessorFactory : IRequestDataProcessorFactory
     {
         private Dictionary<Type, RequestDataProcessor> _processors;
 
