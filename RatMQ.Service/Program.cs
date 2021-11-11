@@ -17,7 +17,7 @@ namespace RatMQ.Service
                     var brokerContext = new BrokerContext();
                     services.AddSingleton<IBrokerContext>(brokerContext);
                     services.AddSingleton<IConsumerMessageSender>(new ConsumerMessageSender(brokerContext));
-                    services.AddSingleton<IRequestDataProcessorFactory>(new RequestDataProcessorFactory());
+                    services.AddSingleton<IRequestDataProcessorFactory>(new RequestDataProcessorFactory(services));
                     services.AddHostedService<ServiceWorker>();
                 });
     }

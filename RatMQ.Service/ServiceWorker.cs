@@ -24,7 +24,11 @@ namespace RatMQ.Service
         private readonly int _port;
 
         public ServiceWorker(
-            IBrokerContext brokerContext, IConsumerMessageSender consumerMessageSender, IRequestDataProcessorFactory requestDataProcessorFactory, IConfiguration configuration, ILogger<ServiceWorker> logger)
+            IBrokerContext brokerContext,
+            IConsumerMessageSender consumerMessageSender,
+            IRequestDataProcessorFactory requestDataProcessorFactory,
+            IConfiguration configuration,
+            ILogger<ServiceWorker> logger)
         {
             _brokerContext = brokerContext;
             _consumerMessageSender = consumerMessageSender;
@@ -79,7 +83,6 @@ namespace RatMQ.Service
                 stream.Flush();
             }
             tcpClient.Close();
-            _consumerMessageSender.SendMessagesToConsumers();
         }
 
         private object RequestDataFromBytes(byte[] buffer, int count)
