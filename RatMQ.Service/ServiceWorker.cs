@@ -75,10 +75,10 @@ namespace RatMQ.Service
                     resultBufferCurrentLength += readBufferLength;
                 }
 
-                var requestData = RequestDataFromBytes(resultBuffer, resultBufferCurrentLength);
+                var requestData = BinarySerializer.FromBinary(resultBuffer, resultBufferCurrentLength);
                 var requestDataProcessor = _requestDataProcessorFactory.GetProcessorFor(requestData);
                 var responseData = requestDataProcessor.GetResponseData(_brokerContext, requestData);
-                var responseDataBytes = ResponseDataToBytes(responseData);
+                var responseDataBytes = BinarySerializer.ToBinary(responseData);
                 var binaryWriter = new BinaryWriter(stream);
                 binaryWriter.Write(responseDataBytes.Length);
                 stream.Write(responseDataBytes);
@@ -91,22 +91,6 @@ namespace RatMQ.Service
                 stream.Close();
                 tcpClient.Close();
             }
-        }
-
-        private object RequestDataFromBytes(byte[] buffer, int count)
-        {
-            var request = (Request)BinarySerializer.FromBinary(buffer, count);
-            var requestDataType = Type.GetType(request.DataType);
-
-            return BinarySerializer.FromBinary(request.Data);
-        }
-
-        private byte[] ResponseDataToBytes(object responseData)
-        {
-            var response = new Response();
-            response.Data = BinarySerializer.ToBinary(responseData);
-
-            return BinarySerializer.ToBinary(response);
         }
 
         private void ReadQueueDescriptions()

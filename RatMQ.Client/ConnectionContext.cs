@@ -26,17 +26,12 @@ namespace RatMQ.Client
 
         public TResponseData SendToBroker<TResponseData>(object requestData)
         {
-            var request = new Request
-            {
-                DataType = requestData.GetType().AssemblyQualifiedName,
-                Data = BinarySerializer.ToBinary(requestData)
-            };
             using (var tcpClient = new TcpClient())
             {
                 tcpClient.Connect(_brokerIp, _brokerPort);
                 using (var stream = tcpClient.GetStream())
                 {
-                    var readBuffer = BinarySerializer.ToBinary(request);
+                    var readBuffer = BinarySerializer.ToBinary(requestData);
                     var binary = new BinaryWriter(stream);
                     binary.Write(readBuffer.Length);
                     stream.Write(readBuffer);
@@ -58,8 +53,7 @@ namespace RatMQ.Client
                         resultBufferCurrentLength += readBufferLength;
                     }
 
-                    var response = (Response)BinarySerializer.FromBinary(resultBuffer, resultBufferCurrentLength);
-                    var responseData = (TResponseData)BinarySerializer.FromBinary(response.Data);
+                    var responseData = (TResponseData)BinarySerializer.FromBinary(resultBuffer, resultBufferCurrentLength);
 
                     return responseData;
                 }
