@@ -15,6 +15,8 @@ namespace RatMQ.Service
     public interface IConsumerMessageSender
     {
         void StartAsync();
+        void CheckToSend();
+        void SendMessagesToConsumersIfNeeded();
         void SendMessagesToConsumers();
     }
 
@@ -22,11 +24,13 @@ namespace RatMQ.Service
     {
         private readonly TimeSpan _sendMessageTimeout;
         private readonly IBrokerContext _brokerContext;
+        private bool _needToSend;
 
         public ConsumerMessageSender(IBrokerContext brokerContext)
         {
             _brokerContext = brokerContext;
             _sendMessageTimeout = TimeSpan.FromSeconds(30);
+            _needToSend = false;
         }
 
         public void StartAsync()
@@ -45,6 +49,20 @@ namespace RatMQ.Service
                     _brokerContext.Consumers.Where(x => !x.IsReadyToConsume).Each(x => x.IsReadyToConsume = true);
                     _brokerContext.Messages.Where(x => x.IsSended && !x.IsCommited).Each(x => x.IsSended = false);
                 }
+            }
+        }
+
+        public void CheckToSend()
+        {
+            _needToSend = true;
+        }
+
+        public void SendMessagesToConsumersIfNeeded()
+        {
+            if (_needToSend)
+            {
+                SendMessagesToConsumers();
+                _needToSend = false;
             }
         }
 

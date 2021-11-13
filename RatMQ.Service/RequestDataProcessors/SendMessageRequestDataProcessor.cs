@@ -25,7 +25,7 @@ namespace RatMQ.Service.RequestDataProcessors
                 QueueName = sendMessageRequestData.QueueName
             });
 
-            _consumerMessageSender.SendMessagesToConsumers();
+            _consumerMessageSender.CheckToSend();
 
             return new SendMessageResponseData { Success = true };
         }

@@ -53,10 +53,12 @@ namespace RatMQ.Service
 
         private void ProcessRequest(TcpClient tcpClient)
         {
-            var resultBuffer = new byte[10 * 1024 * 1024];
-            var readBuffer = new byte[1024 * 1024];
-            using (var stream = tcpClient.GetStream())
+            NetworkStream stream = null;
+            try
             {
+                var resultBuffer = new byte[10 * 1024 * 1024];
+                var readBuffer = new byte[1024 * 1024];
+                stream = tcpClient.GetStream();
                 var binaryReader = new BinaryReader(stream);
                 int requestSize = binaryReader.ReadInt32();
 
@@ -81,8 +83,14 @@ namespace RatMQ.Service
                 binaryWriter.Write(responseDataBytes.Length);
                 stream.Write(responseDataBytes);
                 stream.Flush();
+
+                _consumerMessageSender.SendMessagesToConsumersIfNeeded();
             }
-            tcpClient.Close();
+            finally
+            {
+                stream.Close();
+                tcpClient.Close();
+            }
         }
 
         private object RequestDataFromBytes(byte[] buffer, int count)
