@@ -21,7 +21,8 @@ namespace RatMQ.Service.RequestDataProcessors
             brokerContext.Messages.Add(new BrokerMessage
             {
                 Id = Guid.NewGuid().ToString(),
-                Body = sendMessageRequestData.Message,
+                Body = sendMessageRequestData.MessageBody,
+                Headers = sendMessageRequestData.Headers,
                 QueueName = sendMessageRequestData.QueueName
             });
 

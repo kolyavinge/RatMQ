@@ -2,6 +2,7 @@
 
 namespace RatMQ.Contracts
 {
+    [Serializable]
     public class BrokerConnectionRequestData
     {
         public string BrokerIp { get; set; }
@@ -11,6 +12,7 @@ namespace RatMQ.Contracts
         public int ClientPort { get; set; }
     }
 
+    [Serializable]
     public class BrokerConnectionResponseData
     {
         public bool Success { get; set; }

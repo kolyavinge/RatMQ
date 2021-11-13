@@ -91,10 +91,11 @@ namespace RatMQ.Service
 
         private void SendToConsumer(Client client, BrokerMessage message)
         {
-            var clientMessageJson = JsonSerializer.ToJson(new ClientMessage
+            var clientMessage = BinarySerializer.ToBinary(new ClientMessage
             {
                 Id = message.Id,
                 QueueName = message.QueueName,
+                Headers = message.Headers,
                 Body = message.Body
             });
             using var consumerTcpClient = new TcpClient();
@@ -102,10 +103,9 @@ namespace RatMQ.Service
                 consumerTcpClient.Connect(client.ClientIp, client.ClientPort);
                 using (var stream = consumerTcpClient.GetStream())
                 {
-                    var bytes = Encoding.UTF8.GetBytes(clientMessageJson);
                     var binaryWriter = new BinaryWriter(stream);
-                    binaryWriter.Write(bytes.Length);
-                    stream.Write(bytes);
+                    binaryWriter.Write(clientMessage.Length);
+                    stream.Write(clientMessage);
                 }
             }
         }

@@ -1,10 +1,14 @@
-﻿namespace RatMQ.Service.Domain
+﻿using System.Collections.Generic;
+
+namespace RatMQ.Service.Domain
 {
     public class BrokerMessage
     {
         public string Id { get; set; }
 
-        public string Body { get; set; }
+        public KeyValuePair<string, object>[] Headers { get; set; }
+
+        public byte[] Body { get; set; }
 
         public bool IsSended { get; set; }
 

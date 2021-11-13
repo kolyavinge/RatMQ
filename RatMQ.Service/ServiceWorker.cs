@@ -95,20 +95,18 @@ namespace RatMQ.Service
 
         private object RequestDataFromBytes(byte[] buffer, int count)
         {
-            var json = Encoding.UTF8.GetString(buffer, 0, count);
-            var request = JsonSerializer.FromJson<Request>(json);
-            var requestDataType = Type.GetType(request.JsonDataTypeName);
+            var request = (Request)BinarySerializer.FromBinary(buffer, count);
+            var requestDataType = Type.GetType(request.DataType);
 
-            return JsonSerializer.FromJson(requestDataType, request.JsonData);
+            return BinarySerializer.FromBinary(request.Data);
         }
 
         private byte[] ResponseDataToBytes(object responseData)
         {
             var response = new Response();
-            response.JsonData = JsonSerializer.ToJson(responseData);
-            var json = JsonSerializer.ToJson(response);
+            response.Data = BinarySerializer.ToBinary(responseData);
 
-            return Encoding.UTF8.GetBytes(json);
+            return BinarySerializer.ToBinary(response);
         }
 
         private void ReadQueueDescriptions()

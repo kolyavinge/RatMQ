@@ -5,9 +5,9 @@ using RatMQ.Contracts;
 
 namespace RatMQ.Client
 {
-    public interface IConsumer<TMessage>
+    public interface IConsumer
     {
-        void ConsumeMessage(TMessage message, ConsumeMessageResult result);
+        void ConsumeMessage(ClientMessage clientMessage, ConsumeMessageResult result);
     }
 
     public class ConsumeMessageResult

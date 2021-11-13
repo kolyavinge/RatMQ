@@ -4,8 +4,9 @@ using System.Text;
 
 namespace RatMQ.Contracts
 {
+    [Serializable]
     public class Response
     {
-        public string JsonData { get; set; }
+        public byte[] Data { get; set; }
     }
 }

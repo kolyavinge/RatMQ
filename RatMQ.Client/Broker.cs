@@ -8,19 +8,18 @@ namespace RatMQ.Client
     public class Broker
     {
         private readonly ConnectionContext _connectionContext;
-        private readonly Dictionary<string, AbstractQueue> _queues;
+        private readonly Dictionary<string, Queue> _queues;
 
         internal Broker(ConnectionContext connectionContext)
         {
             _connectionContext = connectionContext;
-            _queues = new Dictionary<string, AbstractQueue>();
+            _queues = new Dictionary<string, Queue>();
             _connectionContext.ListenToBroker(ListenToBrokerCallback);
         }
 
         private void ListenToBrokerCallback(byte[] buffer, int count)
         {
-            var json = Encoding.UTF8.GetString(buffer, 0, count);
-            var clientMessage = JsonSerializer.FromJson<ClientMessage>(json);
+            var clientMessage = (ClientMessage)BinarySerializer.FromBinary(buffer, count);
             var queue = _queues[clientMessage.QueueName];
             queue.SendToConsumers(clientMessage);
         }
@@ -42,7 +41,7 @@ namespace RatMQ.Client
             }
         }
 
-        public Queue<TMessage> CreateQueue<TMessage>(string queueName)
+        public Queue CreateQueue(string queueName)
         {
             var request = new CreateQueueRequestData
             {
@@ -51,7 +50,7 @@ namespace RatMQ.Client
             var response = _connectionContext.SendToBroker<CreateQueueResponseData>(request);
             if (response.Success)
             {
-                var queue = new Queue<TMessage>(_connectionContext, queueName);
+                var queue = new Queue(_connectionContext, queueName);
                 _queues.Add(queueName, queue);
                 return queue;
             }
@@ -61,7 +60,7 @@ namespace RatMQ.Client
             }
         }
 
-        public Queue<TMessage> GetQueue<TMessage>(string queueName)
+        public Queue GetQueue(string queueName)
         {
             var request = new GetQueueRequestData
             {
@@ -70,14 +69,14 @@ namespace RatMQ.Client
             var response = _connectionContext.SendToBroker<GetQueueResponseData>(request);
             if (response.Success)
             {
-                Queue<TMessage> queue;
+                Queue queue;
                 if (_queues.ContainsKey(queueName))
                 {
-                    queue = (Queue<TMessage>)_queues[queueName];
+                    queue = _queues[queueName];
                 }
                 else
                 {
-                    queue = new Queue<TMessage>(_connectionContext, queueName);
+                    queue = new Queue(_connectionContext, queueName);
                     _queues.Add(queueName, queue);
                 }
 

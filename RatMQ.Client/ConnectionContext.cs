@@ -28,16 +28,15 @@ namespace RatMQ.Client
         {
             var request = new Request
             {
-                JsonDataTypeName = requestData.GetType().AssemblyQualifiedName,
-                JsonData = JsonSerializer.ToJson(requestData)
+                DataType = requestData.GetType().AssemblyQualifiedName,
+                Data = BinarySerializer.ToBinary(requestData)
             };
             using (var tcpClient = new TcpClient())
             {
                 tcpClient.Connect(_brokerIp, _brokerPort);
                 using (var stream = tcpClient.GetStream())
                 {
-                    var json = JsonSerializer.ToJson(request);
-                    var readBuffer = Encoding.UTF8.GetBytes(json);
+                    var readBuffer = BinarySerializer.ToBinary(request);
                     var binary = new BinaryWriter(stream);
                     binary.Write(readBuffer.Length);
                     stream.Write(readBuffer);
@@ -59,9 +58,8 @@ namespace RatMQ.Client
                         resultBufferCurrentLength += readBufferLength;
                     }
 
-                    json = Encoding.UTF8.GetString(resultBuffer, 0, resultBufferCurrentLength);
-                    var response = JsonSerializer.FromJson<Response>(json);
-                    var responseData = JsonSerializer.FromJson<TResponseData>(response.JsonData);
+                    var response = (Response)BinarySerializer.FromBinary(resultBuffer, resultBufferCurrentLength);
+                    var responseData = (TResponseData)BinarySerializer.FromBinary(response.Data);
 
                     return responseData;
                 }
