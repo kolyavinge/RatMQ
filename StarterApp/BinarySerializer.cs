@@ -1,10 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace RatMQ.Client
+namespace StarterApp
 {
-    internal static class BinarySerializer
+    public static class BinarySerializer
     {
         public static byte[] ToBinary(object obj)
         {
@@ -18,15 +17,6 @@ namespace RatMQ.Client
         public static object FromBinary(byte[] bytes)
         {
             using var memory = new MemoryStream(bytes);
-            var formatter = new BinaryFormatter();
-            var obj = formatter.Deserialize(memory);
-
-            return obj;
-        }
-
-        public static object FromBinary(byte[] bytes, int count)
-        {
-            using var memory = new MemoryStream(bytes, 0, count);
             var formatter = new BinaryFormatter();
             var obj = formatter.Deserialize(memory);
 
