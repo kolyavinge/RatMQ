@@ -85,6 +85,12 @@ namespace StarterApp
         public int IntField { get; set; }
         public string StringField { get; set; }
         public Inner InnerField { get; set; }
+        public byte[] BigArray { get; set; }
+
+        public Queue2Message()
+        {
+            BigArray = new byte[10 * 1024 * 1024];
+        }
 
         public override string ToString()
         {

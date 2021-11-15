@@ -56,26 +56,18 @@ namespace RatMQ.Service
             NetworkStream stream = null;
             try
             {
-                var resultBuffer = new byte[10 * 1024 * 1024];
-                var readBuffer = new byte[1024 * 1024];
+                // read request
                 stream = tcpClient.GetStream();
                 var binaryReader = new BinaryReader(stream);
                 int requestSize = binaryReader.ReadInt32();
-
-                int resultBufferCurrentLength = 0;
-                int readBufferLength;
-                for (int i = 0; resultBufferCurrentLength != requestSize; i++)
+                int bufferCurrentLength = 0;
+                var buffer = new byte[requestSize];
+                for (int i = 0; bufferCurrentLength != requestSize; i++)
                 {
-                    readBufferLength = stream.Read(readBuffer);
-                    if (readBufferLength + resultBufferCurrentLength > resultBuffer.Length)
-                    {
-                        Array.Resize(ref resultBuffer, 2 * resultBuffer.Length);
-                    }
-                    Array.Copy(readBuffer, 0, resultBuffer, resultBufferCurrentLength, readBufferLength);
-                    resultBufferCurrentLength += readBufferLength;
+                    bufferCurrentLength += stream.Read(buffer, bufferCurrentLength, buffer.Length - bufferCurrentLength);
                 }
-
-                var requestData = BinarySerializer.FromBinary(resultBuffer, resultBufferCurrentLength);
+                // make response
+                var requestData = BinarySerializer.FromBinary(buffer);
                 var requestDataProcessor = _requestDataProcessorFactory.GetProcessorFor(requestData);
                 var responseData = requestDataProcessor.GetResponseData(_brokerContext, requestData);
                 var responseDataBytes = BinarySerializer.ToBinary(responseData);
@@ -83,7 +75,7 @@ namespace RatMQ.Service
                 binaryWriter.Write(responseDataBytes.Length);
                 stream.Write(responseDataBytes);
                 stream.Flush();
-
+                // send messages
                 _consumerMessageSender.SendMessagesToConsumersIfNeeded();
             }
             finally

@@ -22,14 +22,5 @@ namespace RatMQ.Service.Utils
 
             return obj;
         }
-
-        public static object FromBinary(byte[] bytes, int count)
-        {
-            using var memory = new MemoryStream(bytes, 0, count);
-            var formatter = new BinaryFormatter();
-            var obj = formatter.Deserialize(memory);
-
-            return obj;
-        }
     }
 }
