@@ -89,7 +89,7 @@ namespace StarterApp
 
         public Queue2Message()
         {
-            BigArray = new byte[10 * 1024 * 1024];
+            BigArray = new byte[1 * 1024 * 1024];
         }
 
         public override string ToString()

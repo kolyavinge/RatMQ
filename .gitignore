@@ -2,3 +2,4 @@
 bin
 obj
 /RatMQ.Service/queues.config
+/Database/SimpleDB

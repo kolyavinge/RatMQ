@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RatMQ.Service.DataAccess;
 
 namespace RatMQ.Service
 {
@@ -14,10 +15,12 @@ namespace RatMQ.Service
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    var brokerContext = new BrokerContext();
-                    services.AddSingleton<IBrokerContext>(brokerContext);
-                    services.AddSingleton<IConsumerMessageSender>(new ConsumerMessageSender(brokerContext));
-                    services.AddSingleton<IRequestDataProcessorFactory>(new RequestDataProcessorFactory(services));
+                    services.AddSingleton<IDataContextLoader, DataContextLoader>();
+                    services.AddSingleton<IDataContext>(serviceProvider => serviceProvider.GetService<IDataContextLoader>().GetDataContext());
+                    services.AddSingleton<IBrokerMessageStorage, BrokerMessageStorage>();
+                    services.AddSingleton<IBrokerContext>(serviceProvider => new BrokerContextLoader(serviceProvider.GetService<IBrokerMessageStorage>()).GetBrokerContext());
+                    services.AddSingleton<IConsumerMessageSender, ConsumerMessageSender>();
+                    services.AddSingleton<IRequestDataProcessorFactory>(serviceProvider => new RequestDataProcessorFactory(serviceProvider));
                     services.AddHostedService<ServiceWorker>();
                 });
     }

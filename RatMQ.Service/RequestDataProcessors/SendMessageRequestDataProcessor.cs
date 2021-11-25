@@ -8,23 +8,31 @@ namespace RatMQ.Service.RequestDataProcessors
     public class SendMessageRequestDataProcessor : RequestDataProcessor
     {
         private readonly IConsumerMessageSender _consumerMessageSender;
+        private readonly IBrokerMessageStorage _brokerMessageStorage;
 
-        public SendMessageRequestDataProcessor(IConsumerMessageSender consumerMessageSender)
+        public SendMessageRequestDataProcessor(IConsumerMessageSender consumerMessageSender, IBrokerMessageStorage brokerMessageStorage)
         {
             _consumerMessageSender = consumerMessageSender;
+            _brokerMessageStorage = brokerMessageStorage;
         }
 
         public override object GetResponseData(IBrokerContext brokerContext, object requestData)
         {
             var sendMessageRequestData = (SendMessageRequestData)requestData;
 
-            brokerContext.Messages.Add(new BrokerMessage
+            var brokerMessage = new BrokerMessage
             {
                 Id = Guid.NewGuid().ToString(),
-                Body = sendMessageRequestData.MessageBody,
+                QueueName = sendMessageRequestData.QueueName,
                 Headers = sendMessageRequestData.Headers,
-                QueueName = sendMessageRequestData.QueueName
-            });
+                Body = sendMessageRequestData.MessageBody,
+            };
+            brokerContext.Messages.Add(brokerMessage);
+
+            lock (brokerContext)
+            {
+                _brokerMessageStorage.SaveUncommitedMessage(brokerMessage);
+            }
 
             _consumerMessageSender.CheckToSend();
 

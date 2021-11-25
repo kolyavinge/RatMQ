@@ -7,10 +7,12 @@ namespace RatMQ.Service.RequestDataProcessors
     public class CommitMessageRequestDataProcessor : RequestDataProcessor
     {
         private readonly IConsumerMessageSender _consumerMessageSender;
+        private readonly IBrokerMessageStorage _brokerMessageStorage;
 
-        public CommitMessageRequestDataProcessor(IConsumerMessageSender consumerMessageSender)
+        public CommitMessageRequestDataProcessor(IConsumerMessageSender consumerMessageSender, IBrokerMessageStorage brokerMessageStorage)
         {
             _consumerMessageSender = consumerMessageSender;
+            _brokerMessageStorage = brokerMessageStorage;
         }
 
         public override object GetResponseData(IBrokerContext brokerContext, object requestData)
@@ -23,6 +25,7 @@ namespace RatMQ.Service.RequestDataProcessors
                 var consumer = brokerContext.Consumers.First(x => x.ClientId == commitMessageRequestData.ClientId && x.QueueName == message.QueueName);
                 consumer.IsReadyToConsume = true;
                 message.IsCommited = true;
+                _brokerMessageStorage.CommitMessage(message.Id);
             }
 
             _consumerMessageSender.CheckToSend();
