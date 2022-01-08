@@ -12,7 +12,7 @@ namespace RatMQ.Service.DataAccess
 
     public class DataContextInitParams
     {
-        public string DatabasePath { get; set; }
+        public string DatabaseFilPath { get; set; }
     }
 
     public abstract class DataContext : IDataContext

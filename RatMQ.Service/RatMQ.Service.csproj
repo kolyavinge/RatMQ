@@ -12,12 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\SimpleDB\SimpleDB\SimpleDB.csproj" />
         <ProjectReference Include="..\RatMQ.Contracts\RatMQ.Contracts.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="SimpleDB">
-        <HintPath>..\..\SimpleDB\SimpleDB\bin\Debug\netstandard2.1\SimpleDB.dll</HintPath>
-      </Reference>
     </ItemGroup>
 </Project>

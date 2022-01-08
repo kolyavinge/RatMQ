@@ -22,7 +22,7 @@ namespace RatMQ.Service.DataAccess
             var databaseContextType = _configuration.GetValue<string>("DatabaseContextType");
             var initParams = new DataContextInitParams
             {
-                DatabasePath = _configuration.GetValue<string>("DatabasePath")
+                DatabaseFilPath = _configuration.GetValue<string>("DatabaseFilePath")
             };
             var dataContext = (IDataContext)Activator.CreateInstance(Type.GetType(databaseContextType));
             dataContext.Init(initParams);

@@ -11,17 +11,15 @@ namespace RatMQ.Service.DataAccess.SimpleDB
         {
             var builder = DBEngineBuilder.Make();
 
-            builder.WorkingDirectory(initParams.DatabasePath);
+            builder.DatabaseFilePath(initParams.DatabaseFilPath);
 
             builder.Map<MessagePoco>()
-                .Name("messages")
                 .PrimaryKey(x => x.Id)
                 .Field(0, x => x.QueueName)
                 .Field(1, x => x.Headers)
                 .Field(2, x => x.Body);
 
             builder.Map<CommitedMessagePoco>()
-                .Name("commited_messages")
                 .PrimaryKey(x => x.MessageId);
 
             _engine = builder.BuildEngine();
