@@ -15,9 +15,9 @@ namespace RatMQ.Service.DataAccess.SimpleDB
 
             builder.Map<MessagePoco>()
                 .PrimaryKey(x => x.Id)
-                .Field(0, x => x.QueueName)
-                .Field(1, x => x.Headers)
-                .Field(2, x => x.Body);
+                .Field(1, x => x.QueueName)
+                .Field(2, x => x.Headers)
+                .Field(3, x => x.Body);
 
             builder.Map<CommitedMessagePoco>()
                 .PrimaryKey(x => x.MessageId);
