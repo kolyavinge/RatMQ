@@ -29,9 +29,9 @@ namespace RatMQ.Service.DataAccess.SimpleDB
             _engine.GetCollection<TEntity>().InsertOrUpdate(entity);
         }
 
-        public void Save(IEnumerable<TEntity> entities)
+        public void Save(IReadOnlyCollection<TEntity> entities)
         {
-            _engine.GetCollection<TEntity>().InsertOrUpdate(entities);
+            _engine.GetCollection<TEntity>().InsertOrUpdateRange(entities);
         }
 
         public void Update(Expression<Func<TEntity, TEntity>> updateExpression, Expression<Func<TEntity, bool>> whereExpression = null)

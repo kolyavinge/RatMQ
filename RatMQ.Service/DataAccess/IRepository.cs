@@ -12,7 +12,7 @@ namespace RatMQ.Service.DataAccess
 
         void Save(TEntity entity);
 
-        void Save(IEnumerable<TEntity> entities);
+        void Save(IReadOnlyCollection<TEntity> entities);
 
         void Update(Expression<Func<TEntity, TEntity>> updateExpression, Expression<Func<TEntity, bool>> whereExpression = null);
     }
